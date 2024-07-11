@@ -1,4 +1,4 @@
-use crate::{Races, time};
+use crate::{Races, time, Race};
 
 // Search and return index of current race
 pub fn search_current(races: &Vec<Races>) -> Option<usize> {
@@ -12,3 +12,13 @@ pub fn search_current(races: &Vec<Races>) -> Option<usize> {
     None
 }
 
+// Search and return index of current race
+pub fn find_current(races: &Vec<Race>) -> Option<usize> {
+    let time_now = time::utc_now();
+    for (i, race) in races.iter().enumerate() {
+        if time_now < race.main_race() {
+            return Some(i);
+        }
+    }
+    None
+}
