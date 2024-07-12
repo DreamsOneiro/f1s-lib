@@ -180,59 +180,78 @@ fn deserialize_obj<T: DeserializeOwned>(json_str: &str) -> T {
     serde_json::from_str(json_str).expect("Problem converting data")
 }
 
-// Depreciated Class, Ergast shutting down end of 2024
 #[derive(Deserialize)]
 pub struct Races {
-    pub season: String,
-    pub round: String,
-    #[serde(rename(deserialize = "raceName"))]
-    pub race_name: String,
-    #[serde(rename(deserialize = "Circuit"))]
-    pub circuit: Circuits,
-    pub date: String,
-    pub time: String,
-    #[serde(rename(deserialize = "FirstPractice"))]
-    pub fp1: Option<RaceInfo>,
-    #[serde(rename(deserialize = "SecondPractice"))]
-    pub fp2: Option<RaceInfo>,
-    #[serde(rename(deserialize = "ThirdPractice"))]
-    pub fp3: Option<RaceInfo>,
-    #[serde(rename(deserialize = "Qualifying"))]
-    pub quali: Option<RaceInfo>,
-    #[serde(rename(deserialize = "Sprint"))]
-    pub sprint: Option<RaceInfo>,
-}
-
-#[derive(Deserialize)]
-pub struct Circuits {
-    #[serde(rename(deserialize = "circuitName"))]
-    pub circuit_name: String,
-    #[serde(rename(deserialize = "Location"))]
-    pub location: Local,
-}
-
-#[derive(Deserialize)]
-pub struct RaceInfo {
-    pub date: String,
-    pub time: String,
-}
-
-#[derive(Deserialize)]
-pub struct Local {
-    pub locality: String,
+    pub year: usize,
+    pub round: usize,
+    #[serde(rename(deserialize = "date"))]
+    mr_date: String,
+    #[serde(rename(deserialize = "time"))]
+    mr_time: String,
+    #[serde(rename(deserialize = "qualifying_date"))]
+    quali_date: String,
+    #[serde(rename(deserialize = "qualifying_time"))]
+    quali_time: String,
+    #[serde(rename(deserialize = "free_practice_1_date"))]
+    fp1_date: String,
+    #[serde(rename(deserialize = "free_practice_1_time"))]
+    fp1_time: String,
+    #[serde(rename(deserialize = "free_practice_2_date"))]
+    fp2_date: Option<String>,
+    #[serde(rename(deserialize = "free_practice_2_time"))]
+    fp2_time: Option<String>,
+    #[serde(rename(deserialize = "free_practice_3_date"))]
+    fp3_date: Option<String>,
+    #[serde(rename(deserialize = "free_practice_3_time"))]
+    fp3_time: Option<String>,
+    #[serde(rename(deserialize = "sprint_qualifying_date"))]
+    sq_date: Option<String>,
+    #[serde(rename(deserialize = "sprint_qualifying_time"))]
+    sq_time: Option<String>,
+    #[serde(rename(deserialize = "sprint_race_date"))]
+    sprint_date: Option<String>,
+    #[serde(rename(deserialize = "sprint_race_time"))]
+    sprint_time: Option<String>,
+    pub circuit: String,
     pub country: String,
+    pub locality: String,
+    pub grand_prix: String,
 }
-
 impl Races {
-    // Will deserialize from json
-    pub fn from_json(url: &str) -> Vec<Self> {
-        let races = serde_json::from_value(api::api_pull(url));
-        races.expect("Problem converting data")
+    pub fn new() -> Vec<Races> {
+        let response = api::API::new_github().request();
+        deserialize_obj(&response.full_json)
     }
 
-    // Will deserialize from json
-    pub fn from_ergast_json() -> Vec<Self> {
-        serde_json::from_value(api::api_pull("http://ergast.com/api/f1/current.json"))
-            .expect("Problem converting data")
+    pub fn main_race(&self) -> DateTime<Utc> {
+        time::to_dt(&self.mr_date, &self.mr_time)
+    }
+
+    pub fn quali(&self) -> DateTime<Utc> {
+        time::to_dt(&self.quali_date, &self.quali_time)
+    }
+
+    pub fn fp1(&self) -> DateTime<Utc> {
+        time::to_dt(&self.fp1_date, &self.fp1_time)
+    }
+
+    pub fn fp2(&self) -> DateTime<Utc> {
+        time::to_dt(&self.fp2_date.as_ref().unwrap(), &self.fp2_time.as_ref().unwrap())
+    }
+
+    pub fn fp3(&self) -> DateTime<Utc> {
+            time::to_dt(&self.fp3_date.as_ref().unwrap(), &self.fp3_time.as_ref().unwrap())
+    }
+
+    pub fn sq(&self) -> DateTime<Utc> {
+            time::to_dt(&self.sq_date.as_ref().unwrap(), &self.sq_time.as_ref().unwrap())
+    }
+
+    pub fn sprint(&self) -> DateTime<Utc> {
+            time::to_dt(&self.sprint_date.as_ref().unwrap(), &self.sprint_time.as_ref().unwrap())
+    }
+
+    pub fn has_sprint(&self) -> bool {
+        self.sprint_date != None
     }
 }

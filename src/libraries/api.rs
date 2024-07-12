@@ -1,8 +1,10 @@
 pub struct API {
+    pub full_url: String,
     pub race_url: String,
     pub circuit_url: String,
     pub grand_prix_url: String,
     pub country_url: String,
+    pub full_json: String,
     pub race_json: String,
     pub circuit_json: String,
     pub grand_prix_json: String,
@@ -12,10 +14,12 @@ impl API {
     pub fn new_github() -> Self {
         let url_base = String::from("https://raw.githubusercontent.com/DreamsOneiro/f1s-api/main");
         API {
+            full_url: format!("{url_base}/f1db.json"),
             race_url: format!("{url_base}/race.json"),
             circuit_url: format!("{url_base}/circuit.json"),
             grand_prix_url: format!("{url_base}/grand_prix.json"),
             country_url: format!("{url_base}/country.json"),
+            full_json: String::new(),
             race_json: String::new(),
             circuit_json: String::new(),
             grand_prix_json: String::new(),
@@ -24,6 +28,7 @@ impl API {
     }
 
     pub fn request(mut self) -> Self {
+        self.full_json = reqwest_url(&self.full_url);
         self.race_json = reqwest_url(&self.race_url);
         self.circuit_json = reqwest_url(&self.circuit_url);
         self.grand_prix_json = reqwest_url(&self.grand_prix_url);
